@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+body { margin: 0; background: #f4f7f8; color: #173042; }
+.app-shell { max-width: 1180px; margin: 0 auto; padding: 28px 16px 48px; }
+.page-header { margin-bottom: 22px; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.header-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.logout-button { border: 0; background: transparent; color: #155e75; cursor: pointer; font: inherit; font-weight: 700; padding: 8px 0; }
+.eyebrow { margin: 0 0 8px; color: #d97706; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.page-header h1 { margin: 0; color: #123d4d; font-size: 2rem; line-height: 1.05; }
+.subtitle { margin: 12px 0 0; color: #607783; }
+.record-form { margin-bottom: 28px; padding: 18px; }
+.form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.quantity-field { display: flex; gap: 10px; align-items: center; }
+.quantity-field .MuiTextField-root { flex: 1; }
+.form-footer, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.total-display { color: #607783; }
+.total-display strong { margin-left: 8px; color: #155e75; font-size: 1.45rem; }
+.records-section { min-width: 0; }
+.section-heading { margin-bottom: 14px; }
+.section-heading h2 { margin: 0; }
+.profit-loss-section { min-width: 0; }
+.summary-card { height: 100%; }
+.summary-card .MuiCardContent-root { padding: 20px; }
+.profit-value { color: #1b5e20; }
+.cost-value { color: #ad4b00; }
+.loss-value { color: #b71c1c; }
+.net-profit-card { border-color: #155e75; }
+.calculation-note { margin-top: 24px; color: #607783; }
+.records-table .sell-row > .MuiTableCell-root { background-color: #1b5e20; color: #fff; }
+.records-table .sell-row:hover > .MuiTableCell-root { background-color: #2e7d32; }
+.records-table .sell-row .MuiIconButton-root { color: #fff; }
+.records-table .sell-row .sell-chip { background-color: #c8e6c9; border-color: #c8e6c9; color: #123b16; font-weight: 700; }
+.table-filters { margin-bottom: 12px; padding: 0; }
+.table-filters .MuiAccordionDetails-root { padding: 0 16px 16px; }
+.filter-row { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(220px, 1.5fr) minmax(140px, 0.8fr) minmax(145px, 0.8fr) minmax(145px, 0.8fr) auto; }
+.type-filter { min-width: 150px; }
+.date-filter { min-width: 0; }
+.date-filter-label { display: block; margin: 0 0 3px 2px; color: #607783; font-weight: 700; }
+.table-filters .MuiIconButton-root { color: #607783; font-size: 1.35rem; }
+.login-shell { display: grid; min-height: 100vh; place-items: center; padding: 24px 16px; background: radial-gradient(circle at top right, #dceff1 0, #f4f7f8 42%); }
+.login-card { width: min(100%, 410px); padding: 24px; }
+.google-button { min-height: 40px; display: flex; justify-content: center; }
+@media (max-width: 700px) {
+	.page-header { flex-direction: column; }
+	.header-actions { width: 100%; }
+	.header-actions .MuiButton-root { flex: 1; }
+	.filter-row { align-items: stretch; grid-template-columns: 1fr; }
+	.filter-row > :first-child { grid-column: auto; }
+	.type-filter { min-width: 0; }
+	.table-filters .MuiButton-root { align-self: flex-start; }
+	.records-table { min-width: 0 !important; }
+	.records-table thead { display: none; }
+	.records-table tbody, .records-table tr, .records-table td { display: block; width: auto; }
+	.records-table tr { margin-bottom: 14px; border: 1px solid #dce5e8; border-radius: 10px; background: #fff; }
+	.records-table td { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 14px; border-bottom: 1px solid #edf1f2; text-align: right; }
+	.records-table td::before { color: #607783; content: attr(data-label); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-align: left; text-transform: uppercase; }
+	.records-table .sell-row td::before { color: #c8e6c9; }
+	.records-table td:last-child { border-bottom: 0; }
+	.records-table td[data-label="Actions"] { justify-content: flex-end; }
+	.records-table td[data-label="Actions"]::before { margin-right: auto; }
+	.records-table .MuiTableCell-root { border-bottom: 1px solid #edf1f2; }
+	.records-table .MuiTableSortLabel-root { pointer-events: none; }
+	.records-table + .MuiTablePagination-root { overflow-x: auto; }
+	.form-footer { align-items: stretch; flex-direction: column; }
+	.form-footer button { width: 100%; }
+}
+@media (min-width: 701px) {
+	.app-shell { padding: 52px 24px 72px; }
+	.page-header h1 { font-size: clamp(2rem, 5vw, 3.25rem); }
+	.record-form { padding: 24px; }
+	.form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+	.records-table { min-width: 760px; }
+	.login-card { padding: 34px; }
+}
+@media (max-width: 380px) {
+	.quantity-field { align-items: stretch; flex-direction: column; }
+	.quantity-field .MuiToggleButtonGroup-root { align-self: flex-start; }
+	.record-form { padding: 14px; }
+}
