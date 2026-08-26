@@ -269,6 +269,14 @@ app.delete("/api/records/:id", requireAuth, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend listening on http://localhost:${PORT}`);
+async function start() {
+  await db.ready;
+  app.listen(PORT, () => {
+    console.log(`Backend listening on http://localhost:${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error("Database initialization failed", err);
+  process.exit(1);
 });

@@ -1,70 +1,69 @@
-const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
+const { createClient } = require("@libsql/client");
 
-const dbFile = path.join(__dirname, "data.db");
-const db = new sqlite3.Database(dbFile);
-
-db.serialize(() => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS records (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL,
-      amount REAL NOT NULL,
-      quantity REAL,
-      quantity_unit TEXT,
-      total REAL,
-      description TEXT,
-      date TEXT
-    )`,
-  );
-
-  db.run(
-    `CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      username TEXT NOT NULL UNIQUE COLLATE NOCASE,
-      password_hash TEXT,
-      email TEXT UNIQUE COLLATE NOCASE,
-      google_sub TEXT UNIQUE,
-      created_at TEXT NOT NULL
-    )`,
-  );
-
-  db.all("PRAGMA table_info(records)", (err, columns) => {
-    if (err) throw err;
-    const existingColumns = new Set(columns.map((column) => column.name));
-    if (!existingColumns.has("quantity"))
-      db.run("ALTER TABLE records ADD COLUMN quantity REAL");
-    if (!existingColumns.has("quantity_unit"))
-      db.run("ALTER TABLE records ADD COLUMN quantity_unit TEXT");
-    if (!existingColumns.has("total"))
-      db.run("ALTER TABLE records ADD COLUMN total REAL");
-    if (!existingColumns.has("user_id"))
-      db.run(
-        "ALTER TABLE records ADD COLUMN user_id INTEGER REFERENCES users(id)",
-      );
-  });
+const db = createClient({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
+async function initialize() {
+  await db.batch([
+    {
+      sql: `CREATE TABLE IF NOT EXISTS records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        amount REAL NOT NULL,
+        quantity REAL,
+        quantity_unit TEXT,
+        total REAL,
+        description TEXT,
+        date TEXT
+      )`,
+      args: [],
+    },
+    {
+      sql: `CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        password_hash TEXT,
+        email TEXT UNIQUE COLLATE NOCASE,
+        google_sub TEXT UNIQUE,
+        created_at TEXT NOT NULL
+      )`,
+      args: [],
+    },
+  ]);
+
+  const columns = await all("PRAGMA table_info(records)");
+  const existingColumns = new Set(columns.map((column) => column.name));
+  const migrations = [];
+  if (!existingColumns.has("quantity"))
+    migrations.push("ALTER TABLE records ADD COLUMN quantity REAL");
+  if (!existingColumns.has("quantity_unit"))
+    migrations.push("ALTER TABLE records ADD COLUMN quantity_unit TEXT");
+  if (!existingColumns.has("total"))
+    migrations.push("ALTER TABLE records ADD COLUMN total REAL");
+  if (!existingColumns.has("user_id"))
+    migrations.push(
+      "ALTER TABLE records ADD COLUMN user_id INTEGER REFERENCES users(id)",
+    );
+  if (migrations.length)
+    await db.batch(migrations.map((sql) => ({ sql, args: [] })));
+}
+
 function all(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+  return db.execute({ sql, args: params }).then((result) => result.rows);
 }
 
 function run(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve({ id: this.lastID, changes: this.changes });
-    });
-  });
+  return db.execute({ sql, args: params }).then((result) => ({
+    id: Number(result.lastInsertRowid || 0),
+    changes: result.rowsAffected,
+  }));
 }
 
 module.exports = {
   all,
   run,
+  ready: initialize(),
 };

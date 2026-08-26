@@ -35,7 +35,7 @@ Backend API:
 - `PUT /api/records/:id` - update record
 - `DELETE /api/records/:id` - delete record
 
-Database: SQLite file at `backend/data.db` (low maintenance, zero-cost to host locally)
+Database: Turso/libSQL. Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `backend/.env`.
 
 Run with Docker (both services):
 
@@ -46,26 +46,4 @@ docker compose up
 
 This runs the backend on port `4000` and the frontend preview on port `5173`.
 
-Production DB guidance:
-
-- For low-cost, low-maintenance single-server deployments you can keep using SQLite, but it doesn't scale across multiple instances.
-- For a secure, production-ready option with modest cost, use a managed Postgres provider (Supabase, Neon, or managed RDS). Postgres is widely supported, secure, and has low-cost tiers.
-- If you want, I can add a Postgres switch in the backend and a `docker-compose.postgres.yml` to run Postgres locally for testing.
-
-Backup recommendation (SQLite)
-
-- Create periodic backups of `backend/data.db` (simple and reliable). I added a basic backup script at `backend/backup.sh`.
-- Run a backup manually:
-
-```bash
-cd backend
-npm run backup
-```
-
-- Example cron (daily at 2am):
-
-```cron
-0 2 * * * cd /path/to/purchase-sell-book/backend && /bin/sh backup.sh
-```
-
-- For remote backups, copy the generated files in `backend/backups/` to a secure object store (S3, Backblaze B2) or use `rsync` to a backup host.
+Turso manages database availability and backups remotely. Keep the auth token only in environment variables and rotate it if it has been exposed.

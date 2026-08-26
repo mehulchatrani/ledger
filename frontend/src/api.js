@@ -1,5 +1,6 @@
-const BASE = "http://localhost:4000/api/records";
-const AUTH_BASE = "http://localhost:4000/api/auth";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+const BASE = `${API_URL}/records`;
+const AUTH_BASE = `${API_URL}/auth`;
 
 function authHeaders() {
   const token = localStorage.getItem("ledger_token");
