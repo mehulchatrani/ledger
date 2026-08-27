@@ -18,7 +18,7 @@ cp .env.example .env
 node -e "console.log(require('bcryptjs').hashSync('your-password', 12))"
 ```
 
-Put the generated hash in `AUTH_PASSWORD_HASH`, choose the client's `AUTH_USERNAME`, and set a long random `JWT_SECRET`. For Google login, create a Google OAuth web client, add `http://localhost:5173` as an authorized JavaScript origin, and set its client ID in both `backend/.env` (`GOOGLE_CLIENT_ID`) and `frontend/.env` (`VITE_GOOGLE_CLIENT_ID`). Set `GOOGLE_ALLOWED_EMAIL` to the client's verified Google email. The login screen also provides password registration, with unique usernames enforced; the configured Google email remains restricted to that specific client account.
+Put the generated hash in `AUTH_PASSWORD_HASH`, choose the client's `AUTH_USERNAME`, and set a long random `JWT_SECRET`. Login sessions last 30 days by default; set `JWT_EXPIRES_IN` in `backend/.env` to change this (for example, `90d` or `12h`). For Google login, create a Google OAuth web client, add `http://localhost:5173` as an authorized JavaScript origin, and set its client ID in both `backend/.env` (`GOOGLE_CLIENT_ID`) and `frontend/.env` (`VITE_GOOGLE_CLIENT_ID`). Set `GOOGLE_ALLOWED_EMAIL` to the client's verified Google email. The login screen also provides password registration, with unique usernames enforced; the configured Google email remains restricted to that specific client account.
 
 Run frontend:
 

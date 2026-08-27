@@ -10,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET =
   process.env.JWT_SECRET || "local-development-secret-change-me";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "30d";
 const googleClient = process.env.GOOGLE_CLIENT_ID
   ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
   : null;
@@ -20,7 +21,7 @@ app.use(
 app.use(express.json());
 
 function createToken(user) {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: "8h" });
+  return jwt.sign(user, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 function requireAuth(req, res, next) {
@@ -86,12 +87,10 @@ app.post("/api/auth/password", async (req, res) => {
 app.post("/api/auth/register", async (req, res) => {
   const { name, username, password } = req.body;
   if (!name?.trim() || !username?.trim() || !password || password.length < 8) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Name, username, and a password of at least 8 characters are required",
-      });
+    return res.status(400).json({
+      error:
+        "Name, username, and a password of at least 8 characters are required",
+    });
   }
   if (username === process.env.AUTH_USERNAME)
     return res.status(409).json({ error: "That username is already in use" });
@@ -104,16 +103,14 @@ app.post("/api/auth/register", async (req, res) => {
     const user = await db.all("SELECT id FROM users WHERE username = ?", [
       username.trim(),
     ]);
-    res
-      .status(201)
-      .json({
-        token: createToken({
-          id: user[0].id,
-          username: username.trim(),
-          name: name.trim(),
-          provider: "password",
-        }),
-      });
+    res.status(201).json({
+      token: createToken({
+        id: user[0].id,
+        username: username.trim(),
+        name: name.trim(),
+        provider: "password",
+      }),
+    });
   } catch (err) {
     if (err.message.includes("UNIQUE constraint failed"))
       return res.status(409).json({ error: "That username is already in use" });

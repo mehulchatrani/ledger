@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 import {
   Accordion,
   AccordionDetails,
@@ -26,6 +27,12 @@ import {
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+
+const recordTotal = (record) =>
+  Number(record.total == null ? record.amount : record.total) || 0;
+
+const formatDate = (date) => (date ? new Date(date).toLocaleDateString() : "");
 
 export default function RecordList({ records = [], onEdit, onDelete }) {
   const [typeFilter, setTypeFilter] = useState("all");
@@ -113,6 +120,56 @@ export default function RecordList({ records = [], onEdit, onDelete }) {
     resetPage();
   };
 
+  const handleExport = () => {
+    const totals = records.reduce((result, record) => {
+      result[record.type] = (result[record.type] || 0) + recordTotal(record);
+      return result;
+    }, {});
+    const sellTotal = totals.sell || 0;
+    const purchaseTotal = totals.purchase || 0;
+    const otherExpensesTotal = totals.other_expenses || 0;
+    const grossProfit = sellTotal - purchaseTotal;
+
+    const recordRows = records.map((record, index) => ({
+      "Sr No.": index + 1,
+      Type: record.type === "other_expenses" ? "Other expenses" : record.type,
+      Amount: Number(record.amount) || 0,
+      Quantity: record.quantity == null ? "" : Number(record.quantity),
+      "Quantity Unit": record.quantity_unit || "",
+      Total: recordTotal(record),
+      Description: record.description || "",
+      Date: formatDate(record.date),
+    }));
+    const profitLossRows = [
+      { Metric: "Sell items total", Amount: sellTotal },
+      { Metric: "Purchase items total", Amount: purchaseTotal },
+      { Metric: "Gross Profit", Amount: grossProfit },
+      { Metric: "Other Expenses", Amount: otherExpensesTotal },
+      { Metric: "Net Profit", Amount: grossProfit - otherExpensesTotal },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    const recordsSheet = XLSX.utils.json_to_sheet(recordRows);
+    const profitLossSheet = XLSX.utils.json_to_sheet(profitLossRows);
+    recordsSheet["!cols"] = [
+      { wch: 8 },
+      { wch: 18 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 16 },
+      { wch: 12 },
+      { wch: 32 },
+      { wch: 16 },
+    ];
+    profitLossSheet["!cols"] = [{ wch: 24 }, { wch: 16 }];
+    XLSX.utils.book_append_sheet(workbook, recordsSheet, "Records");
+    XLSX.utils.book_append_sheet(workbook, profitLossSheet, "P&L");
+    XLSX.writeFile(
+      workbook,
+      `purchase-sell-ledger-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
+  };
+
   const sortableHeader = (label, field) => (
     <TableCell sortDirection={orderBy === field ? order : false}>
       <TableSortLabel
@@ -137,6 +194,15 @@ export default function RecordList({ records = [], onEdit, onDelete }) {
             {records.length === 1 ? "entry" : "entries"}
           </Typography>
         </div>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<FileDownloadOutlinedIcon />}
+          onClick={handleExport}
+          disabled={records.length === 0}
+        >
+          Export Excel
+        </Button>
       </div>
       <Accordion
         className="table-filters"
