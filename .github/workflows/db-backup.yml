@@ -13,13 +13,26 @@ jobs:
       - name: Install Turso CLI
         run: |
           curl -sL https://get.tur.so/install.sh | bash
-          echo "$HOME/.turso" >> $GITHUB_PATH
+          echo "$HOME/.turso" >> "$GITHUB_PATH"
+
+      - name: Validate Turso secrets
+        env:
+          TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
+          TURSO_DB_NAME: ${{ secrets.TURSO_DB_NAME }}
+        run: |
+          if [ -z "$TURSO_API_TOKEN" ] || [ -z "$TURSO_DB_NAME" ]; then
+            echo "Missing TURSO_API_TOKEN or TURSO_DB_NAME secret"
+            exit 1
+          fi
 
       - name: Dump Database to SQL
         env:
           TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
+          TURSO_DB_NAME: ${{ secrets.TURSO_DB_NAME }}
         run: |
-          turso db shell ${{ secrets.TURSO_DB_NAME }} --script ".dump" > backup-$(date +%Y-%m-%d).sql
+          backup_file="backup-$(date +%Y-%m-%d).sql"
+          turso db shell "$TURSO_DB_NAME" --script ".dump" > "$backup_file"
+          ls -l "$backup_file"
 
       - name: Save Backup as Artifact
         uses: actions/upload-artifact@v4
